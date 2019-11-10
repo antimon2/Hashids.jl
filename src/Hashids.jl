@@ -191,4 +191,10 @@ function decodehex(config::Configuration, hashid::AbstractString)
     join(string(number, base=16)[2:end] for number in numbers)
 end
 
+# Compatibility
+@static if !isdefined(Base, :isnothing)
+    isnothing(::Nothing) = true
+    isnothing(_any) = false
+end
+
 end # module
