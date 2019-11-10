@@ -1,5 +1,7 @@
 module Hashids
 
+using Base.Checked: mul_with_overflow, add_with_overflow
+
 # const RATIO_SEPARATORS = 3.5
 const RATIO_SEPARATORS = 7//2
 const RATIO_GUARDS = 12
@@ -80,20 +82,28 @@ function _hash(number, alphabet_list)
     alphabet_list[reverse(digits(number, base=length(alphabet_list))) .+ 1]
 end
 
+function _checked_muladd(x::T, y::Integer, z::Integer) where {T<:Integer}
+    _checked_muladd(promote(x, y, z)...)::Union{T, Nothing}
+end
+function _checked_muladd(x::T, y::T, z::T) where {T<:Integer}
+    xy, overflown = mul_with_overflow(x, y)
+    overflown && return nothing
+    result, overflown = add_with_overflow(xy, z)
+    overflown && return nothing
+    result
+end
+_checked_muladd(x::BigInt, y::Integer, z::Integer) = muladd(x, y, z)
+
 _unhash(hashed, alphabet_list) = _unhash(Int, hashed, alphabet_list)
 function _unhash(::Type{I}, hashed, alphabet_list) where {I <: Integer}
     number = zero(I)
     len_alphabet = length(alphabet_list)
     for character in hashed
-        old_number = number
         position = findfirst(isequal(character), alphabet_list)
-        position === nothing && return nothing
-        number *= len_alphabet
-        number += position - 1
-        if number < old_number
-            # overflow → widen
-            return _unhash(widen(I), hashed, alphabet_list)
-        end
+        isnothing(position) && return nothing
+        _number = _checked_muladd(number, len_alphabet, position - 1)
+        isnothing(_number) && return _unhash(widen(I), hashed, alphabet_list)
+        number = something(_number)
     end
     return number
 end
