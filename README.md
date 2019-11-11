@@ -1,5 +1,8 @@
 # Hashids.jl
 
+[![Build Status](https://travis-ci.org/antimon2/Hashids.jl.svg?branch=master)](https://travis-ci.org/antimon2/Hashids.jl) [![Cirrus](https://api.cirrus-ci.com/github/antimon2/Hashids.jl.svg)](https://cirrus-ci.com/github/antimon2/Hashids.jl)  
+[![codecov.io](http://codecov.io/github/antimon2/Hashids.jl/coverage.svg?branch=master)](http://codecov.io/github/antimon2/Hashids.jl?branch=master)
+
 A Julia port of the JavaScript Hashids implementation. Website: http://www.hashids.org/
 
 ## Installation
@@ -50,7 +53,7 @@ julia> Hashids.decode(conf, "xoz")
  456
 ```
 
-Encode deveral integers:
+Encode several integers:
 
 ```julia
 julia> Hashids.encode(conf, 123, 456, 789)
@@ -61,7 +64,7 @@ julia> Hashids.encode(conf, [123, 456, 789])
 
 ```
 
-Decode the hash (returns N-element Integer Array):
+Decode a hash (returns N-elements Integer Array):
 
 ```julia
 julia> Hashids.decode(conf, "1B8UvJfXm")
@@ -73,7 +76,7 @@ julia> Hashids.decode(conf, "1B8UvJfXm")
 
 ### Using Custom Salt
 
-Hashids supports salting hashes by accepting a salt value. If you don’t want others to decode your hashes, provide a unique string to the configurator.
+Hashids supports salting hashes by accepting a `salt` value. If you don’t want others to decode your hashes, provide a unique string to `Hashids.configure()`.
 
 ```julia
 julia> conf = Hashids.configure(salt="this is my salt 1");
@@ -97,7 +100,7 @@ A salt string between 6 and 32 characters provides decent randomization.
 
 By default, hashes are going to be the shortest possible. One reason you might want to increase the hash length is to obfuscate how large the integer behind the hash is.
 
-This is done by passing the minimum hash length to the configurator. Hashes are padded with extra characters to make them seem longer.
+This is done by passing the `min_length` to `Hashids.configure()`. Hashes are padded with extra characters to make them seem longer.
 
 ```julia
 julia> conf = Hashids.configure(min_length=16);
