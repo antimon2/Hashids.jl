@@ -205,4 +205,4 @@ When decoding a hashid, the algorithm tries to decode it to the system `Int` typ
 
 ## License
 
-MIT license, see the LICENSE file. You can use hashids in open source projects and commercial products.
+MIT license, see the [LICENSE](LICENSE) file. You can use hashids in open source projects and commercial products.
