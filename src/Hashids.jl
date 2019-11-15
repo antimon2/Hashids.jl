@@ -1,5 +1,7 @@
 module Hashids
 
+export encode, decode, encodehex, decodehex
+
 using Base.Checked: mul_with_overflow, add_with_overflow
 
 # const RATIO_SEPARATORS = 3.5
@@ -7,11 +9,6 @@ const RATIO_SEPARATORS = 7//2
 const RATIO_GUARDS = 12
 const DEFAULT_ALPHABET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
 const DEFAULT_SEPARATORS = "cfhistuCFHISTU"
-
-# _index_from_ratio(dividend, divisor) = ceil(Int, dividend / divisor)
-function _index_from_ratio(dividend::Integer, divisor::Union{<:Integer, <:Rational})
-    return cld(dividend, divisor)
-end
 
 _reorder!(list::Vector{Char}, salt::AbstractString) = _reorder!(list, collect(salt))
 function _reorder!(list::Vector{Char}, salt)
@@ -30,10 +27,6 @@ function _reorder!(list::Vector{Char}, salt)
 
     list
 end
-function _reorder(s::AbstractString, salt)
-    length(s) == 0 && return s
-    String(_reorder!(collect(s), salt))
-end
 
 struct Configuration
     salt::String
@@ -50,7 +43,7 @@ struct Configuration
             throw(ArgumentError("Alphabet must contain at least 16 unique characters."))
         end
         _reorder!(separators_list, salt)
-        min_separators = _index_from_ratio(len_alphabet, RATIO_SEPARATORS)
+        min_separators = cld(len_alphabet, RATIO_SEPARATORS)
         number_of_missing_separators = min_separators - len_separators
         if number_of_missing_separators > 0
             append!(separators_list, alphabet_list[1:number_of_missing_separators])
@@ -59,7 +52,7 @@ struct Configuration
         end
         _reorder!(alphabet_list, salt)
 
-        num_guards = _index_from_ratio(len_alphabet, RATIO_GUARDS)
+        num_guards = cld(len_alphabet, RATIO_GUARDS)
         if len_alphabet < 3
             guards_list = separators_list[1:num_guards]
             separators_list = separators_list[num_guards + 1:end]
@@ -71,12 +64,10 @@ struct Configuration
         new(salt, max(min_length, 0), String(alphabet_list), String(guards_list), String(separators_list))
     end
 end
+Configuration(; salt::String = "", min_length::Int = 0, alphabet::String = DEFAULT_ALPHABET) = Configuration(salt, min_length, alphabet)
 
-# configure() = Configuration("", 0, DEFAULT_ALPHABET)
 configure(salt) = Configuration(string(salt), 0, DEFAULT_ALPHABET)
-configure(;salt::String = "", min_length::Int = 0, alphabet::String = DEFAULT_ALPHABET) = Configuration(salt, min_length, alphabet)
-
-# const DEFAULT_CONFIG = configure()
+configure(; kwargs...) = Configuration(; kwargs...)
 
 function _hash(number, alphabet_list)
     alphabet_list[reverse(digits(number, base=length(alphabet_list))) .+ 1]
@@ -86,10 +77,10 @@ function _checked_muladd(x::T, y::Integer, z::Integer) where {T<:Integer}
     _checked_muladd(promote(x, y, z)...)::Union{T, Nothing}
 end
 function _checked_muladd(x::T, y::T, z::T) where {T<:Integer}
-    xy, overflown = mul_with_overflow(x, y)
-    overflown && return nothing
-    result, overflown = add_with_overflow(xy, z)
-    overflown && return nothing
+    xy, overflow = mul_with_overflow(x, y)
+    overflow && return nothing
+    result, overflow = add_with_overflow(xy, z)
+    overflow && return nothing
     result
 end
 _checked_muladd(x::BigInt, y::Integer, z::Integer) = muladd(x, y, z)
@@ -133,9 +124,6 @@ function _ensure_length!(encoded, min_length, alphabet_list, guards, values_hash
     return encoded
 end
 
-# encode(values::Vararg{Integer}) = encode(DEFAULT_CONFIG, values...)
-# encode(values::Array{<:Integer}) = encode(DEFAULT_CONFIG, values...)
-
 encode(config::Configuration, values::Array{<:Integer}) = encode(config, values...)
 function encode(config::Configuration, values::Vararg{Integer})
     alphabet_list = collect(config.alphabet)
@@ -162,7 +150,6 @@ function encode(config::Configuration, values::Vararg{Integer})
     return String(encoded)
 end
 
-# decode(hashid::String) = decode(DEFAULT_CONFIG, hashid)
 function decode(config::Configuration, hashid::AbstractString)
     parts = split(hashid, in(config.guards))
     _hashid = 2 ≤ length(parts) ≤ 3 ? parts[2] : parts[1]

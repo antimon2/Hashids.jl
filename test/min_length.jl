@@ -14,9 +14,9 @@ const TESTDATA = [
 function test_with_min_length(min_length::Int)
     config = Hashids.configure(min_length=min_length)
     for numbers in TESTDATA
-        hashid = Hashids.encode(config, numbers)
+        hashid = encode(config, numbers)
         @test length(hashid) ≥ min_length
-        @test Hashids.decode(config, hashid) == numbers
+        @test decode(config, hashid) == numbers
     end
 end
 

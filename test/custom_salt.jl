@@ -14,7 +14,7 @@ const TESTDATA = [
 function test_with_custom_salt(salt::String)
     config = Hashids.configure(salt)
     for numbers in TESTDATA
-        @test Hashids.decode(config, Hashids.encode(config, numbers)) == numbers
+        @test decode(config, encode(config, numbers)) == numbers
     end
 end
 
