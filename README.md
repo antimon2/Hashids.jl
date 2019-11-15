@@ -1,9 +1,9 @@
 # Hashids.jl
 
 [![Build Status](https://travis-ci.org/antimon2/Hashids.jl.svg?branch=master)](https://travis-ci.org/antimon2/Hashids.jl) [![Cirrus](https://api.cirrus-ci.com/github/antimon2/Hashids.jl.svg)](https://cirrus-ci.com/github/antimon2/Hashids.jl)  
-[![codecov.io](http://codecov.io/github/antimon2/Hashids.jl/coverage.svg?branch=master)](http://codecov.io/github/antimon2/Hashids.jl?branch=master)
+[![codecov.io](https://codecov.io/github/antimon2/Hashids.jl/coverage.svg?branch=master)](https://codecov.io/github/antimon2/Hashids.jl?branch=master)
 
-A Julia port of the JavaScript Hashids implementation. Website: http://www.hashids.org/
+A Julia port of the JavaScript Hashids implementation. Website: https://hashids.org/
 
 ## Installation
 
@@ -24,10 +24,10 @@ to verify that everything is functioning properly on your machine.
 
 ## Usage
 
-Import the `Hashids` module:
+Import the `Hashids` module with `using` statement:
 
 ```julia
-julia> import Hashids
+julia> using Hashids
 ```
 
 ### Basic Usage
@@ -41,14 +41,14 @@ julia> conf = Hashids.configure();
 Encode a single integer:
 
 ```julia
-julia> Hashids.encode(conf, 123)
+julia> encode(conf, 123)
 "Mj3"
 ```
 
 Decode a hash (returns 1-element Integer Array):
 
 ```julia
-julia> Hashids.decode(conf, "xoz")
+julia> decode(conf, "xoz")
 1-element Array{Int64,1}:
  456
 ```
@@ -56,10 +56,10 @@ julia> Hashids.decode(conf, "xoz")
 Encode several integers:
 
 ```julia
-julia> Hashids.encode(conf, 123, 456, 789)
+julia> encode(conf, 123, 456, 789)
 "El3fkRIo3"
 
-julia> Hashids.encode(conf, [123, 456, 789])
+julia> encode(conf, [123, 456, 789])
 "El3fkRIo3"
 
 ```
@@ -67,7 +67,7 @@ julia> Hashids.encode(conf, [123, 456, 789])
 Decode a hash (returns N-elements Integer Array):
 
 ```julia
-julia> Hashids.decode(conf, "1B8UvJfXm")
+julia> decode(conf, "1B8UvJfXm")
 3-element Array{Int64,1}:
  517
  729
@@ -81,7 +81,7 @@ Hashids supports salting hashes by accepting a `salt` value. If you don’t want
 ```julia
 julia> conf = Hashids.configure(salt="this is my salt 1");
 
-julia> Hashids.encode(conf, 123)
+julia> encode(conf, 123)
 "nVB"
 ```
 
@@ -90,7 +90,7 @@ The generated hash changes whenever the salt is changed:
 ```julia
 julia> conf = Hashids.configure("this is my salt 2");  # equivalent to `Hashids.configure(salt="this is my salt 2")`
 
-julia> Hashids.encode(conf, 123)
+julia> encode(conf, 123)
 "ojK"
 ```
 
@@ -105,7 +105,7 @@ This is done by passing the `min_length` to `Hashids.configure()`. Hashes are pa
 ```julia
 julia> conf = Hashids.configure(min_length=16);
 
-julia> Hashids.encode(conf, 1)
+julia> encode(conf, 1)
 "4q2VolejRejNmGQB"
 ```
 
@@ -118,7 +118,7 @@ To have only lowercase letters in your hashes, pass in the following custom alph
 ```julia
 julia> conf = Hashids.configure(alphabet="abcdefghijklmnopqrstuvwxyz");
 
-julia> Hashids.encode(conf, 123456789)
+julia> encode(conf, 123456789)
 "kekmyzyk"
 ```
 
@@ -135,29 +135,29 @@ There are no repeating patterns that might show that there are 4 identical numbe
 ```julia
 julia> conf = Hashids.configure("this is my salt");
 
-julia> Hashids.encode(conf, 5, 5, 5, 5)
+julia> encode(conf, 5, 5, 5, 5)
 "1Wc8cwcE"
 ```
 
 The same is valid for incremented numbers:
 
 ```julia
-julia> Hashids.encode(conf, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+julia> encode(conf, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
 "kRHnurhptKcjIDTWC3sx"
 
-julia> Hashids.encode(conf, 1)
+julia> encode(conf, 1)
 "NV"
 
-julia> Hashids.encode(conf, 2)
+julia> encode(conf, 2)
 "6m"
 
-julia> Hashids.encode(conf, 3)
+julia> encode(conf, 3)
 "yD"
 
-julia> Hashids.encode(conf, 4)
+julia> encode(conf, 4)
 "2l"
 
-julia> Hashids.encode(conf, 5)
+julia> encode(conf, 5)
 "rD"
 ```
 
