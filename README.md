@@ -1,7 +1,6 @@
 # Hashids.jl
 
-[![Build Status](https://travis-ci.org/antimon2/Hashids.jl.svg?branch=master)](https://travis-ci.org/antimon2/Hashids.jl) [![Cirrus](https://api.cirrus-ci.com/github/antimon2/Hashids.jl.svg)](https://cirrus-ci.com/github/antimon2/Hashids.jl)  
-[![codecov.io](https://codecov.io/github/antimon2/Hashids.jl/coverage.svg?branch=master)](https://codecov.io/github/antimon2/Hashids.jl?branch=master)
+[![Build Status](https://travis-ci.org/antimon2/Hashids.jl.svg?branch=master)](https://travis-ci.org/antimon2/Hashids.jl) [![Cirrus](https://api.cirrus-ci.com/github/antimon2/Hashids.jl.svg)](https://cirrus-ci.com/github/antimon2/Hashids.jl) [![codecov.io](https://codecov.io/github/antimon2/Hashids.jl/coverage.svg?branch=master)](https://codecov.io/github/antimon2/Hashids.jl?branch=master)
 
 A Julia port of the JavaScript Hashids implementation. Website: https://hashids.org/
 
@@ -59,9 +58,8 @@ Encode several integers:
 julia> encode(conf, 123, 456, 789)
 "El3fkRIo3"
 
-julia> encode(conf, [123, 456, 789])
+julia> encode(conf, [123, 456, 789])  # same as above
 "El3fkRIo3"
-
 ```
 
 Decode a hash (returns N-elements Integer Array):
@@ -111,7 +109,7 @@ julia> encode(conf, 1)
 
 ### Using A Custom Alphabet
 
-It’s possible to set a custom alphabet for your hashes. The default alphabet is "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".
+It’s possible to set a custom alphabet for your hashes. The default alphabet is `"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"`.
 
 To have only lowercase letters in your hashes, pass in the following custom alphabet:
 
@@ -123,6 +121,38 @@ julia> encode(conf, 123456789)
 ```
 
 A custom alphabet must contain at least 16 characters.
+
+You can even use emojis as the alphabet.
+
+### Encode hex instead of numbers
+
+Useful if you want to encode numbers like Mongo's ObjectIds.
+
+```julia
+julia> conf = Hashids.configure();
+
+julia> hashid = encodehex(conf, "507f1f77bcf86cd799439011")
+"y42LW46J9luq3Xq9XMly"
+
+julia> hex = decodehex(conf, hashid)
+"507f1f77bcf86cd799439011"
+```
+
+Please note that this is not the equivalent of:
+
+```julia
+julia> conf = Hashids.configure();
+
+julia> hashid = encode(conf, big"0x507f1f77bcf86cd799439011")
+"y8qpJL3ZgzJ8lWk4GEV"
+
+julia> hex = string(decode(conf, hashid)[1], base=16)
+"507f1f77bcf86cd799439011"
+```
+
+The difference between the two is that the built-in `encodehex` will always result in the same length, even if it contained leading zeros.
+
+For example `encodehex(conf, "00000000")` would encode to `"qExOgK7"` and decode back to `"00000000"` (length information is preserved).
 
 ## Randomness
 
@@ -166,6 +196,12 @@ julia> encode(conf, 5)
 This code was written with the intent of placing generated hashes in visible places – like the URL. Which makes it unfortunate if generated hashes accidentally formed a bad word.
 
 Therefore, the algorithm tries to avoid generating most common English curse words by never placing the following letters next to each other: **c, C, s, S, f, F, h, H, u, U, i, I, t, T**.
+
+## Int / Int64 / Int128 / BigInt
+
+Julia supports several bitrange Integers (`Int8` / `UInt8` / `Int16` / `UInt16` / `Int32` / `UInt32` / `Int64` / `UInt64` / `Int128` / `UInt128`) and `BigInt`. You can use the standard API to encode all of them the same way.
+
+When decoding a hashid, the algorithm tries to decode it to the system `Int` type (`Int64` if x64 architecture). In case of overflow, bitrange is automatically expanded (`Int64` → `Int128` → `BigInt`). It does not throw an error.
 
 ## License
 
