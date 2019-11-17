@@ -42,4 +42,24 @@ end  # of "encodehex"
 
 end  # of "Custom Config Hex"
 
+@testset "Custom Salt Hex" begin
+
+@testset "encodehex and decodehex back" begin
+
+encoder = HashidsHexEncoder("this is my salt")
+decoder = HashidsHexDecoder("this is my salt")
+
+@test transcode(decoder, transcode(encoder, "deadbeef")) == "deadbeef"
+@test transcode(decoder, transcode(encoder, "abcdef123456")) == "abcdef123456"
+@test transcode(decoder, transcode(encoder, "ABCDDD6666DDEEEEEEEEE")) == lowercase("ABCDDD6666DDEEEEEEEEE")
+@test transcode(decoder, transcode(encoder, "507f1f77bcf86cd799439011")) == "507f1f77bcf86cd799439011"
+@test transcode(decoder, transcode(encoder, "f00000fddddddeeeee4444444ababab")) == "f00000fddddddeeeee4444444ababab"
+@test transcode(decoder, transcode(encoder, "abcdef123456abcdef123456abcdef123456")) == "abcdef123456abcdef123456abcdef123456"
+@test transcode(decoder, transcode(encoder, "f000000000000000000000000000000000000000000000000000f")) == "f000000000000000000000000000000000000000000000000000f"
+@test transcode(decoder, transcode(encoder, "fffffffffffffffffffffffffffffffffffffffffffffffffffff")) == "fffffffffffffffffffffffffffffffffffffffffffffffffffff"
+
+end  # of "encodehex and decodehex back"
+
+end  # of "Custom Salt Hex"
+
 end  # module
