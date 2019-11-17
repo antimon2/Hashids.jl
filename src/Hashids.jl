@@ -179,7 +179,7 @@ end
 
 function encodehex(config::Configuration, hex::AbstractString)
     isnothing(match(r"^[0-9a-fA-F]+$", hex)) && return ""
-    numbers = [parse(Int64, "1" * m.match, base=16) for m in eachmatch(r"[0-9a-fA-F]{1,12}", hex)]
+    numbers = [parse(Int64, "1" * hex[i:min(i+11,end)], base=16) for i in 1:12:lastindex(hex)]
     encode(config, numbers)
 end
 
