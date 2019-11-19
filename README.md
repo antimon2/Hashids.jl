@@ -9,7 +9,13 @@ A Julia port of the JavaScript Hashids implementation. Website: https://hashids.
 To install, run on the Julia Pkg REPL-mode:
 
 ```julia
-pkg> add https://github.com/antimon2/Hashids.jl.git
+pkg> add Hashids
+```
+
+To install the latest development version, run the following command instead:
+
+```julia
+pkg> add Hashids#master
 ```
 
 Then you can run the built-in unit tests with
