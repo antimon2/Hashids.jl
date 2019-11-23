@@ -34,7 +34,7 @@ struct Configuration
     alphabet::String
     guards::String
     separators::String
-    function Configuration(salt::String, min_length::Int, alphabet::AbstractString)
+    function Configuration(salt::AbstractString, min_length::Int, alphabet::AbstractString)
         separators_list = [c for c = DEFAULT_SEPARATORS if c ∈ alphabet]
         alphabet_list = [c for c = unique(alphabet) if c ∉ separators_list && !isspace(c)]
         len_alphabet = length(alphabet_list)
@@ -61,10 +61,10 @@ struct Configuration
             alphabet_list = alphabet_list[num_guards + 1:end]
         end
 
-        new(salt, max(min_length, 0), String(alphabet_list), String(guards_list), String(separators_list))
+        new(string(salt), max(min_length, 0), String(alphabet_list), String(guards_list), String(separators_list))
     end
 end
-Configuration(; salt::String = "", min_length::Int = 0, alphabet::String = DEFAULT_ALPHABET) = Configuration(salt, min_length, alphabet)
+Configuration(; salt::AbstractString = "", min_length::Int = 0, alphabet::AbstractString = DEFAULT_ALPHABET) = Configuration(salt, min_length, alphabet)
 
 configure(salt) = Configuration(string(salt), 0, DEFAULT_ALPHABET)
 configure(; kwargs...) = Configuration(; kwargs...)
