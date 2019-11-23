@@ -85,16 +85,17 @@ function _checked_muladd(x::T, y::T, z::T) where {T<:Integer}
 end
 _checked_muladd(x::BigInt, y::Integer, z::Integer) = muladd(x, y, z)
 
-_unhash(hashed, alphabet_list) = _unhash(Int, hashed, alphabet_list)
-function _unhash(::Type{I}, hashed, alphabet_list) where {I <: Integer}
-    number = zero(I)
+_unhash(hashed, alphabet_list) = _checked_unhash(0, hashed, iterate(hashed), alphabet_list)
+function _checked_unhash(number::I, hashed, hashed_status, alphabet_list) where {I <: Integer}
     len_alphabet = length(alphabet_list)
-    for character in hashed
+    while !isnothing(hashed_status)
+        (character, st) = hashed_status
         position = findfirst(isequal(character), alphabet_list)
         isnothing(position) && return nothing
         _number = _checked_muladd(number, len_alphabet, position - 1)
-        isnothing(_number) && return _unhash(widen(I), hashed, alphabet_list)
+        isnothing(_number) && return _checked_unhash(widen(number), hashed, hashed_status, alphabet_list)
         number = something(_number)
+        hashed_status = iterate(hashed, st)
     end
     return number
 end
