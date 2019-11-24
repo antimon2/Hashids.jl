@@ -1,18 +1,16 @@
 module CustomConfigHexTest
 
 using Hashids.Transcoders
-using Hashids: configure
 using Test
 
 @testset "Custom Config Hex" begin
 
-config = configure(
+encoder = HashidsHexEncoder(
     salt="this is my salt",
     min_length=30,
     alphabet="xzal86grmb4jhysfoqp3we7291kuct5iv0nd"
 )
-encoder = HashidsHexEncoder(config)
-decoder = HashidsHexDecoder(config)
+decoder = HashidsHexDecoder(encoder)
 
 @testset "encodehex and decodehex back" begin
 
