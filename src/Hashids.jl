@@ -28,6 +28,14 @@ function _reorder!(list::Vector{Char}, salt)
     list
 end
 
+"""
+    Hashids.Configuration
+
+Hashids' parameter-configuration.  
+Be sure to place the instance as the 1st argument of [`encode`](@ref), [`decode`](@ref), [`encodehex`](@ref) and [`decodehex`](@ref). 
+
+See also: [`configure`](@ref)
+"""
 struct Configuration
     salt::String
     min_length::Int
@@ -66,6 +74,26 @@ struct Configuration
 end
 Configuration(; salt::AbstractString = "", min_length::Int = 0, alphabet::AbstractString = DEFAULT_ALPHABET) = Configuration(salt, min_length, alphabet)
 
+"""
+    Hashids.configure()  
+    Hashids.configure(salt)  
+    Hashids.configure(salt="", min_length=0, alphabet=DEFAULT_ALPHABET)
+
+Configure Hashids with parameters, and return [`Hashids.Configuration`](@ref) instance.  
+`Hashids.configure()` returns default-configuration.
+
+# Example
+```julia-repl
+julia> config = Hashids.configure();
+
+julia> config = Hashids.configure("this is my salt");
+
+julia> config = Hashids.configure(salt="this is another salt", min_length=16, alphabet="abcdefghijklmnopqrstuvwxyz");
+
+```
+
+See also: [`Configuration`](@ref)
+"""
 configure(salt) = Configuration(string(salt), 0, DEFAULT_ALPHABET)
 configure(; kwargs...) = Configuration(; kwargs...)
 
@@ -125,6 +153,22 @@ function _ensure_length!(encoded, min_length, alphabet_list, guards, values_hash
     return encoded
 end
 
+"""
+    encode(config::Hashids.Configuration, values::Array{<:Integer})  
+    encode(config::Hashids.Configuration, values::Integer...)
+
+Encode the passed `values` to a hash.
+
+# Example
+```julia-repl
+julia> encode(Hashids.configure(), 1, 2, 3)
+"o2fXhV"
+
+julia> encode(Hashids.configure(), [1, 2, 3])
+"o2fXhV"
+
+```
+"""
 encode(config::Configuration, values::Array{<:Integer}) = encode(config, values...)
 function encode(config::Configuration, values::Vararg{Integer})
     alphabet_list = collect(config.alphabet)
@@ -151,6 +195,21 @@ function encode(config::Configuration, values::Vararg{Integer})
     return String(encoded)
 end
 
+"""
+    decode(config::Hashids.Configuration, hashid::AbstractString)
+
+Restore a numbers list from the passed `hashid`.
+
+# Example
+```julia-repl
+julia> decode(Hashids.configure(), "o2fXhV")
+3-element Array{Int64,1}:
+ 1
+ 2
+ 3
+
+```
+"""
 function decode(config::Configuration, hashid::AbstractString)
     parts = split(hashid, in(config.guards))
     _hashid = 2 ≤ length(parts) ≤ 3 ? parts[2] : parts[1]
@@ -178,12 +237,36 @@ function decode(config::Configuration, hashid::AbstractString)
     return [numbers...]
 end
 
+"""
+    encodehex(config::Hashids.Configuration, hex::AbstractString)
+
+Convert a hexadecimal string (e.g. a MongoDB id) to a hashid.
+
+# Example
+```julia-repl
+julia> encodehex(Hashids.configure(), "abcdef123456")
+"kmP69lB3xv"
+
+```
+"""
 function encodehex(config::Configuration, hex::AbstractString)
     isnothing(match(r"^[0-9a-fA-F]+$", hex)) && return ""
     numbers = [parse(Int64, "1" * hex[i:min(i+11,end)], base=16) for i in 1:12:lastindex(hex)]
     encode(config, numbers)
 end
 
+"""
+    decodehex(config::Hashids.Configuration, hashid::AbstractString)
+
+Resrtore a hexadecimal string (e.g. a MongoDB id) from the passed `hashid`.
+
+# Example
+```julia-repl
+julia> decodehex(Hashids.configure(), "kmP69lB3xv")
+"abcdef123456"
+
+```
+"""
 function decodehex(config::Configuration, hashid::AbstractString)
     numbers = decode(config, hashid)
     join(string(number, base=16)[2:end] for number in numbers)
