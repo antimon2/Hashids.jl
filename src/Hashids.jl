@@ -278,4 +278,7 @@ end
     isnothing(_any) = false
 end
 
+# plugins
+include("Transcoders.jl")
+
 end # module
